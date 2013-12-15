@@ -1,0 +1,121 @@
+#!/usr/bin/env node
+// vim: set filetype=javascript:
+
+var path = require('path');
+
+var moment = require('moment');
+var colors = require('colors');
+var program = require('commander');
+
+var T = require('../t');
+
+// Track tasks daily, saved as a plain text file named by today's date
+// eg. 2013-10-10.t
+var today = moment().format('YYYY-MM-DD');
+var configFile = __dirname + '/../config.json';
+
+// A config.json set/get task saved directory
+// `{ dir: 'path' }`
+function requireConfig() {
+  try {
+    return require(configFile);
+  }
+  catch(e) {
+    console.log('\nPlease set task saved directory first.');
+    program.outputHelp();
+    process.exit(1);
+  }
+}
+
+function prompt(t) {
+  console.log('You are working on ' + t.task.text.bold.cyan + ' started at ' + t.task.start.green);
+  console.log('Press s+Enter to stop working on this task');
+
+  process.stdin.resume();
+  process.stdin.on('data', function(action) {
+    if (action == 's' + os.EOL) {
+      // Save time and exit
+      // TODO: save end time every 3 minutes to prevent like Ctrl+C exit
+      t.stop();
+      process.exit(1);
+    }
+  });
+}
+
+function initToday() {
+  var config = requireConfig();
+  return new T(path.join(config.dir, today + '.t'));
+}
+
+program
+  .command('set <dir>')
+  .description('set the task saved directory')
+  .action(function(d) {
+    var config = {};
+    try { config = require(configFile); } catch(e) {}
+    config.dir = path.resolve(d);
+    fs.writeFileSync(configFile, JSON.stringify(config, null, 4));
+    console.log('Set the saved directory to ' + config.dir + ' success!');
+  });
+
+program
+  .command('add <task>')
+  .description('add a new task(todo)')
+  .action(function(text) {
+    var t = initToday();
+    t.parser.on('end', function() {
+      t.add(text);
+    });
+  });
+
+program
+  .command('start <id | "task">')
+  .description('start a task by id, or add and start a new task')
+  .action(function(arg) {
+    var t = initToday();
+    if (/^\d+$/.test(arg)) {
+      // Start task by id
+      var id = parseInt(arg, 10);
+      t.parser.on('end', function() {
+        try {
+          t.start(id);
+          prompt(t);
+        }
+        catch(e) {
+          console.log('Task id ' + arg.red + ' does not exist!');
+          process.exit(1);
+        }
+      });
+    }
+    else {
+      // Add new task then start
+      t.insert(arg).start();
+      prompt(t);
+    }
+  });
+
+program
+  .command('list')
+  .description('list tasks')
+  .action(function() {
+    var t = initToday();
+    t.parser.on('end', function() {
+      var list = t.getUniqList();
+      if (list.length === 0) {
+        console.log('You have no task tracked today!');
+        process.exit(1);
+      }
+      else {
+        // List with ids
+        list.forEach(function(item, i) {
+          console.log(i.toString().green+ '\t' + item.text.cyan);
+        });
+      }
+    });
+  });
+
+program.parse(process.argv);
+
+if (process.argv.length == 2) {
+  program.outputHelp();
+}
