@@ -2,10 +2,11 @@
 // vim: set filetype=javascript:
 
 var path = require('path');
+var os = require('os');
 
+var program = require('commander');
 var moment = require('moment');
 var colors = require('colors');
-var program = require('commander');
 
 var T = require('../t');
 
