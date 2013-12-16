@@ -14,7 +14,7 @@ describe('T', function() {
       fs.rmdirSync(tempDir);
     });
     it('should insert and save a task', function() {
-      this.t.insert('hello world').start();
+      this.t.push('hello world').start();
       fs.existsSync(tempFile).should.be.false;
       this.t.stop();
       fs.existsSync(tempFile).should.be.true;
@@ -32,15 +32,15 @@ describe('T', function() {
       clock.restore();
     });
     it('should add a todo task', function() {
-      this.t.add('todo item');
+      this.t.todo('todo item');
       var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).trim();
       tasks.should.be.equal('todo item |');
     });
     it('should start a todo task by name', function() {
       // Insert task first
-      this.t.insert('hello world').start();
+      this.t.push('hello world').start();
       this.t.stop();
-      this.t.add('todo item');
+      this.t.todo('todo item');
       this.t.start('todo item');
       this.t.stop();
       var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).trim().split('\n');
@@ -68,7 +68,7 @@ describe('T', function() {
       // Insert task first
       this.t.start('task 1');
       this.t.stop();
-      this.t.add('todo item');
+      this.t.todo('todo item');
       // start by id
       this.t.start(1);
       this.t.stop();
@@ -79,7 +79,7 @@ describe('T', function() {
       tasks[1].should.match(/\d{1,2}:\d{2}/);
     });
     it('should save the metas', function() {
-      this.t.insert('hello world | p:1, tag: text').start();
+      this.t.push('hello world | p:1, tag: text').start();
       this.t.stop();
       var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' });
       tasks.should.match(/p: 1/);

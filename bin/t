@@ -65,7 +65,7 @@ program
   .action(function(text) {
     var t = initToday();
     t.parser.on('end', function() {
-      t.add(text);
+      t.todo(text);
     });
   });
 
@@ -90,7 +90,7 @@ program
     }
     else {
       // Add new task then start
-      t.insert(arg).start();
+      t.start(arg);
       prompt(t);
     }
   });

@@ -32,15 +32,15 @@ function T(filepath) {
 }
 
 // Add a todo task, with no start and end time
-T.prototype.add = function(text) {
+T.prototype.todo = function(text) {
   // Added when the todo item doesn't exist
   if (_.findIndex(this.collections, { text: text }) == -1) {
-    this.insert(text).save();
+    this.push(text).save();
   }
 };
 
-// Insert a new task to collections
-T.prototype.insert = function(text) {
+// Push a new task to collections
+T.prototype.push = function(text) {
     this.task = this.parser.parseBody(text);
     this.collections.push(this.task);
     return this;
@@ -52,7 +52,7 @@ T.prototype.setTaskByName = function(text) {
     return !task.start && !task.end && task.text == text;
   });
   if (!this.task) {
-    this.insert(text);
+    this.push(text);
   }
 };
 
