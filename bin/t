@@ -3,17 +3,20 @@
 
 var path = require('path');
 var os = require('os');
+var fs = require('fs');
 
 var program = require('commander');
 var moment = require('moment');
 var colors = require('colors');
+var mkdirp = require('mkdirp');
 
 var T = require('../t');
 
 // Track tasks daily, saved as a plain text file named by today's date
 // eg. 2013-10-10.t
 var today = moment().format('YYYY-MM-DD');
-var configFile = __dirname + '/../config.json';
+var HOME = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
+var configFile = path.join(HOME, '.t/config.json');
 
 // A config.json set/get task saved directory
 // `{ dir: 'path' }`
@@ -55,6 +58,7 @@ program
     var config = {};
     try { config = require(configFile); } catch(e) {}
     config.dir = path.resolve(d);
+    try { mkdirp.sync(path.dirname(configFile)); } catch(e) {}
     fs.writeFileSync(configFile, JSON.stringify(config, null, 4));
     console.log('Set the saved directory to ' + config.dir + ' success!');
   });
@@ -70,7 +74,7 @@ program
   });
 
 program
-  .command('start <id | "task">')
+  .command('start <id|task>')
   .description('start a task by id, or add and start a new task')
   .action(function(arg) {
     var t = initToday();

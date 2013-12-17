@@ -1,20 +1,29 @@
 {
-  "name": "t",
-  "version": "0.0.0",
-  "description": "A life long time tracker",
-  "main": "index.js",
+  "name": "t-cli",
+  "version": "0.0.3",
+  "description": "A daily time tracker",
+  "keywords": [
+    "time tracker",
+    "cli",
+    "tool",
+    "GTD"
+  ],
+  "main": "t",
   "scripts": {
     "test": "mocha test"
   },
-  "keywords": [
-    "time",
-    "track"
-  ],
-  "author": "hulufei",
-  "license": "BSD-2-Clause",
   "bin": {
     "t": "./bin/t"
   },
+  "author": {
+    "name": "hulufei",
+    "email": "f.calabash@gmail.com"
+  },
+  "repository": {
+    "type": "git",
+    "url": "https://github.com/hulufei/t.git"
+  },
+  "license": "MIT",
   "devDependencies": {
     "should": "~2.1.1",
     "sinon": "~1.7.3"
