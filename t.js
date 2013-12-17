@@ -8,9 +8,9 @@ var _ = require('lodash');
 
 var parser = require('./lib/parser');
 
-// T is a instance of task file, date is optional, default is today
-// Every line in task file is a task(item)
-// All the tasks(items) construct a collection
+
+// T is a instance of task file, every line in task file is a task, all the tasks
+// construct a collection
 function T(filepath) {
   this.file = filepath || '';
   this.stream = fs.createReadStream(this.file, { encoding: 'utf8' });

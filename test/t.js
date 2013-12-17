@@ -6,13 +6,16 @@ describe('T', function() {
   describe('Create New Task File', function() {
     var tempDir = 'tmp/';
     var tempFile = tempDir + 'test.t';
+
     beforeEach(function() {
       this.t = new T(tempFile);
     });
+
     afterEach(function() {
       fs.unlinkSync(tempFile);
       fs.rmdirSync(tempDir);
     });
+
     it('should insert and save a task', function() {
       this.t.push('hello world').start();
       fs.existsSync(tempFile).should.be.false;
@@ -23,6 +26,7 @@ describe('T', function() {
       tasks.should.startWith(this.t.task.start);
       tasks.should.endWith(this.t.task.end);
     });
+
     it('should start and track a task', function() {
       var clock = sinon.useFakeTimers();
       this.t.start('hello world');
@@ -31,11 +35,13 @@ describe('T', function() {
       this.t.task.start.should.not.equal(this.t.task.end);
       clock.restore();
     });
+
     it('should add a todo task', function() {
       this.t.todo('todo item');
       var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).trim();
       tasks.should.be.equal('todo item |');
     });
+
     it('should start a todo task by name', function() {
       // Insert task first
       this.t.push('hello world').start();
@@ -49,6 +55,7 @@ describe('T', function() {
       tasks[1].should.match(/todo item/);
       tasks[1].should.match(/\d{1,2}:\d{2}/);
     });
+
     it('should start task by id', function() {
       // Insert task first
       this.t.start('task 1');
@@ -64,6 +71,7 @@ describe('T', function() {
       tasks[2].should.match(/task 1/);
       tasks[2].should.match(/\d{1,2}:\d{2}/);
     });
+
     it('should start a todo task by id', function() {
       // Insert task first
       this.t.start('task 1');
@@ -78,6 +86,7 @@ describe('T', function() {
       tasks[1].should.match(/todo item/);
       tasks[1].should.match(/\d{1,2}:\d{2}/);
     });
+
     it('should save the metas', function() {
       this.t.push('hello world | p:1, tag: text').start();
       this.t.stop();
@@ -98,6 +107,7 @@ describe('T', function() {
         done();
       });
     });
+
     it('should unique and list tasks in order', function(done) {
       var t = new T(__dirname + '/tasks/repeat.t');
       t.parser.on('end', function() {
@@ -110,6 +120,7 @@ describe('T', function() {
         done();
       });
     });
+
     it('should parse broken task file', function(done) {
       var t = new T(__dirname + '/tasks/broken.t');
       t.parser.on('end', function() {
@@ -121,6 +132,7 @@ describe('T', function() {
         done();
       });
     });
+
     it('should parse invalid task file', function(done) {
       var t = new T(__dirname + '/tasks/invalid.t');
       t.parser.on('end', function() {
@@ -128,6 +140,7 @@ describe('T', function() {
       });
       done();
     });
+
     describe('Metas', function() {
       it('should parse basic metas', function(done) {
         var t = new T(__dirname + '/tasks/metas_basic.t');
@@ -138,6 +151,7 @@ describe('T', function() {
           done();
         });
       });
+
       it('should parse messy metas', function(done) {
         var t = new T(__dirname + '/tasks/metas_messy.t');
         t.parser.on('end', function() {
@@ -150,6 +164,7 @@ describe('T', function() {
           done();
         });
       });
+
       it('should parse broken metas', function(done) {
         var t = new T(__dirname + '/tasks/metas_broken.t');
         t.parser.on('end', function() {
