@@ -83,25 +83,25 @@ program
   .description('start a task by id, or add and start a new task')
   .action(function(arg) {
     var t = initToday();
-    if (/^\d+$/.test(arg)) {
-      // Start task by id
-      var id = parseInt(arg, 10);
-      t.parser.on('end', function() {
-        try {
-          t.start(id);
-          prompt(t);
-        }
-        catch(e) {
-          console.log('Task id ' + arg.red + ' does not exist!');
-          process.exit(1);
-        }
-      });
-    }
-    else {
-      // Add new task then start
-      t.start(arg);
-      prompt(t);
-    }
+    t.parser.on('end', function() {
+      if (/^\d+$/.test(arg)) {
+        // Start task by id
+        var id = parseInt(arg, 10);
+          try {
+            t.start(id);
+            prompt(t);
+          }
+          catch(e) {
+            console.log('Task id ' + arg.red + ' does not exist!');
+            process.exit(1);
+          }
+      }
+      else {
+        // Add new task then start
+        t.start(arg);
+        prompt(t);
+      }
+    });
   });
 
 program

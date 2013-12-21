@@ -94,6 +94,23 @@ describe('T', function() {
       tasks.should.match(/p: 1/);
       tasks.should.match(/tag: text/);
     });
+
+    it.skip('should sort a started todo item to the end', function() {
+      // Currently prefer to keep id orders
+      // To implement this, just change find to filter
+      this.t.start('task 1');
+      this.t.stop();
+      this.t.todo('todo');
+      this.t.start('task 2');
+      this.t.stop();
+      // start a todo
+      this.t.start('todo');
+      this.t.stop();
+      var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).split('\n');
+      tasks.should.have.length(3);
+      tasks[2].should.match(/todo/);
+    });
+
   });
 
   describe('Load Exist Task File', function() {
