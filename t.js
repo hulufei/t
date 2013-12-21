@@ -109,4 +109,13 @@ T.prototype.getUniqList = function() {
   return _.uniq(this.collections, 'text');
 };
 
+// Sorted tasks
+T.prototype.getSortedList = function() {
+  return _.sortBy(this.collections, function(task) {
+    return task.start ? moment({
+        hour: task.start.split(':')[0],
+        minute: task.start.split(':')[1] }) : task.start;
+  });
+};
+
 module.exports = T;

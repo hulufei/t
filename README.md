@@ -20,7 +20,12 @@ List today's tasks with ids:
 
 `t list`
 
+List last 3 days' tasks
+
+`t list 3`
+
 Start working on a task by id:
+
 
 `t start id`
 

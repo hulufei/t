@@ -17,6 +17,7 @@ var T = require('../t');
 var today = moment().format('YYYY-MM-DD');
 var HOME = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
 var configFile = path.join(HOME, '.t/config.json');
+var config;
 
 // A config.json set/get task saved directory
 // `{ dir: 'path' }`
@@ -46,28 +47,35 @@ function prompt(t) {
   });
 }
 
-function initToday() {
-  var config = requireConfig();
-  return new T(path.join(config.dir, today + '.t'));
+// date format: YYYY-MM-DD
+function iniT(date) {
+  config = config || requireConfig();
+  return new T(path.join(config.dir, (date || today) + '.t'));
 }
 
 program
-  .command('set <dir>')
-  .description('set the task saved directory')
+  .command('set [dir]')
+  .description('get/set the task saved directory')
   .action(function(d) {
     var config = {};
     try { config = require(configFile); } catch(e) {}
-    config.dir = path.resolve(d);
-    try { mkdirp.sync(path.dirname(configFile)); } catch(e) {}
-    fs.writeFileSync(configFile, JSON.stringify(config, null, 4));
-    console.log('Set the saved directory to ' + config.dir + ' success!');
+    if (d) {
+      config.dir = path.resolve(d);
+      try { mkdirp.sync(path.dirname(configFile)); } catch(e) {}
+      fs.writeFileSync(configFile, JSON.stringify(config, null, 4));
+      console.log('Set the saved directory to ' + config.dir + ' success!');
+    }
+    else {
+      // Show the saved directory without specified
+      console.log(config.dir || 'You have not set task saved directory yet!');
+    }
   });
 
 program
   .command('add <task>')
   .description('add a new task(todo)')
   .action(function(text) {
-    var t = initToday();
+    var t = iniT();
     t.stream.on('error', function(e) {
       if (e.code == 'ENOENT') {
         t.todo(text);
@@ -82,7 +90,7 @@ program
   .command('start <id|task>')
   .description('start a task by id, or add and start a new task')
   .action(function(arg) {
-    var t = initToday();
+    var t = iniT();
     t.parser.on('end', function() {
       if (/^\d+$/.test(arg)) {
         // Start task by id
@@ -105,23 +113,60 @@ program
   });
 
 program
-  .command('list')
-  .description('list tasks')
-  .action(function() {
-    var t = initToday();
-    t.parser.on('end', function() {
-      var list = t.getUniqList();
-      if (list.length === 0) {
-        console.log('You have no task tracked today!');
-        process.exit(1);
+  .command('list [period]')
+  .description('list tasks, optional specified by days or week.\n' +
+      '\teg.\n' +
+      '\tlist\tlist today\'s tasks\n' +
+      '\tlist 3\tlist last 3 day\'s tasks'
+    )
+  .action(function(period) {
+    if (period) {
+      var days = parseInt(period, 10);
+      var date;
+
+      var _next = function(t) {
+        console.log('\n' + date.bold.magenta + '\n');
+        var list = t.getSortedList();
+        if (list.length === 0) {
+          console.log('You have no task tracked today!'.cyan);
+        }
+        list.forEach(function(item, i) {
+          // Exclude todo items
+          if (item.start && item.end) {
+            var duration = item.start + ' - ' + item.end;
+            console.log(duration.green + '\t' + item.text.cyan);
+          }
+        });
+        if (--days >= 0) {
+          summary(days);
+        }
+      };
+
+      var summary = function(days) {
+        date = moment().subtract('d', days).format('YYYY-MM-DD');
+        var t = iniT(date);
+        t.stream.on('error', function() { _next(t); });
+        t.parser.on('end', function() { _next(t); });
+      };
+
+      if (days > 0 && days < 30) {
+        summary(--days);
       }
-      else {
+    }
+    else {
+      var t = iniT();
+      t.parser.on('end', function() {
+        var list = t.getUniqList();
+        if (list.length === 0) {
+          console.log('You have no task tracked today!');
+          process.exit(1);
+        }
         // List with ids
         list.forEach(function(item, i) {
           console.log(i.toString().green+ '\t' + item.text.cyan);
         });
-      }
-    });
+      });
+    }
   });
 
 program.parse(process.argv);

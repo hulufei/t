@@ -138,6 +138,20 @@ describe('T', function() {
       });
     });
 
+    it('should sorted tasks by start time', function(done) {
+      var t = new T(__dirname + '/tasks/unsort.t');
+      t.parser.on('end', function() {
+        t.collections.should.have.length(4);
+        var list = t.getSortedList();
+        list.should.have.length(4);
+        list[0].should.include({ start: '', text: 'todo' });
+        list[1].should.include({ start: '8:00', text: 'todo' });
+        list[2].should.include({ text: 'task 1' });
+        list[3].should.include({ text: 'task 2' });
+        done();
+      });
+    });
+
     it('should parse broken task file', function(done) {
       var t = new T(__dirname + '/tasks/broken.t');
       t.parser.on('end', function() {
