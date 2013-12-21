@@ -48,9 +48,14 @@ function prompt(t) {
 }
 
 // date format: YYYY-MM-DD
-function iniT(date) {
+function iniT(date, cb) {
   config = config || requireConfig();
-  return new T(path.join(config.dir, (date || today) + '.t'));
+  var t = new T(path.join(config.dir, (date || today) + '.t'));
+  if (cb) {
+    t.stream.on('error', function(e) { cb(e, t); });
+    t.parser.on('end', function(e) { cb(e, t); });
+  }
+  return t;
 }
 
 program
@@ -75,13 +80,7 @@ program
   .command('add <task>')
   .description('add a new task(todo)')
   .action(function(text) {
-    var t = iniT();
-    t.stream.on('error', function(e) {
-      if (e.code == 'ENOENT') {
-        t.todo(text);
-      }
-    });
-    t.parser.on('end', function() {
+    iniT(today, function(e, t) {
       t.todo(text);
     });
   });
@@ -90,8 +89,7 @@ program
   .command('start <id|task>')
   .description('start a task by id, or add and start a new task')
   .action(function(arg) {
-    var t = iniT();
-    t.parser.on('end', function() {
+    iniT(today, function(e, t) {
       if (/^\d+$/.test(arg)) {
         // Start task by id
         var id = parseInt(arg, 10);
@@ -124,11 +122,11 @@ program
       var days = parseInt(period, 10);
       var date;
 
-      var _next = function(t) {
+      var _next = function(e, t) {
         console.log('\n' + date.bold.magenta + '\n');
         var list = t.getSortedList();
         if (list.length === 0) {
-          console.log('You have no task tracked today!'.cyan);
+          console.log('You have no task today!'.cyan);
         }
         list.forEach(function(item, i) {
           // Exclude todo items
@@ -144,9 +142,7 @@ program
 
       var summary = function(days) {
         date = moment().subtract('d', days).format('YYYY-MM-DD');
-        var t = iniT(date);
-        t.stream.on('error', function() { _next(t); });
-        t.parser.on('end', function() { _next(t); });
+        iniT(date, _next);
       };
 
       if (days > 0 && days < 30) {
