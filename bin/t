@@ -68,6 +68,11 @@ program
   .description('add a new task(todo)')
   .action(function(text) {
     var t = initToday();
+    t.stream.on('error', function(e) {
+      if (e.code == 'ENOENT') {
+        t.todo(text);
+      }
+    });
     t.parser.on('end', function() {
       t.todo(text);
     });
