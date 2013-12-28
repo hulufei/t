@@ -5,7 +5,6 @@ var path = require('path');
 var os = require('os');
 var fs = require('fs');
 
-var charm = require('charm')(process);
 var program = require('commander');
 var moment = require('moment');
 var colors = require('colors');
@@ -47,6 +46,7 @@ function start(t) {
   var lastX = lines[lastY].length;
   // TODO: More smart to determine longer or short break
   var mode = t.getAllPomodori().length % pomodoro.pomodori === 0 ? 'longer' : 'short';
+  var charm = require('charm')(process);
 
   charm.cursor(false);
 
@@ -84,13 +84,44 @@ function start(t) {
       pomodoro.stopTimer();
       // Log the interruption
       charm.move(-timerX, lastY - timerY + 1);
-      console.log('\n');
-      console.log('Interruption +1, press Ctrl+C one more time to exit'.red);
+      console.log('\nChoose a interruption reason or enter others(Press Ctrl+C one more time to exit):');
+      var inputs = [];
+      var interruptions = [
+        'Colleague Interrupted',
+        'Boss Interrupted',
+        'Phone Call'
+      ];
+      interruptions.forEach(function(value, i) {
+        console.log((i + '. ' + value).red);
+      });
+      process.stdin.on('data', function(chunk) {
+        var s = chunk.toString('utf8');
+        if (s.charCodeAt(0) === 127 && inputs.length > 0) {
+          // Match BACKSPACE
+          inputs.pop();
+          charm.erase('start');
+          charm.move(-inputs.length - 1, 0);
+          charm.write(inputs.join(''));
+        }
+        else if (s.match(/\r\n|[\n\r\u0085\u2028\u2029]/)) {
+          // Match ENTER
+          // Remove first '\u003'
+          inputs.shift();
+          // console.log(inputs);
+          var line = inputs.join('').trim();
+          t.task.metas.interruption = line.match(/^\d+$/) ?
+            (interruptions[+line] || 1) : line;
+          charm.emit('^C');
+        }
+        else {
+          inputs.push(s);
+        }
+      });
     }
-    t.stop();
 
     // Exit on next Ctrl+C
     charm.once('^C', function() {
+      t.stop();
       process.exit();
     });
   });
