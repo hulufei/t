@@ -7,6 +7,7 @@ var split = require('split');
 var _ = require('lodash');
 
 var parser = require('./lib/parser');
+var pomodoro = require('./lib/pomodoro')();
 
 
 // T is a instance of task file, every line in task file is a task, all the tasks
@@ -83,7 +84,6 @@ T.prototype.stop = function() {
 
 // Save to task file
 T.prototype.save = function() {
-  // Write to a task file
   // Create directory first, in case the filepath's directory doesn't exist
   try { mkdirp.sync(path.dirname(this.file)); } catch(e) {}
   fs.writeFileSync(this.file, this.stringify().join('\n'));
@@ -115,6 +115,13 @@ T.prototype.getSortedList = function() {
     return task.start ? moment({
         hour: task.start.split(':')[0],
         minute: task.start.split(':')[1] }) : task.start;
+  });
+};
+
+// Pomodoros
+T.prototype.getAllPomodori = function() {
+  return _.filter(this.collections, function(task) {
+    return task.metas.pomodoro;
   });
 };
 

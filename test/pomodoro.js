@@ -1,0 +1,78 @@
+var sinon = require('sinon');
+var Pomodoro = require('../lib/pomodoro');
+
+describe('Pomodoro', function() {
+  var pomotime = 25 * 60 * 1000;
+  var shortbreak = 5 * 60 * 1000;
+
+  beforeEach(function() {
+    this.pomodoro = Pomodoro();
+    this.clock = sinon.useFakeTimers();
+  });
+
+  afterEach(function() {
+    this.pomodoro.stopTimer();
+    this.clock.restore();
+  });
+
+  it('should start a pomodoro timer, emit countdown tick', function() {
+    var spy = sinon.spy();
+    this.pomodoro.on('tick', spy);
+    this.pomodoro.start();
+    this.clock.tick(2000);
+    sinon.assert.calledTwice(spy);
+    sinon.assert.calledWith(spy, '24:58');
+  });
+
+  it('should emit incremental time after a pomodoro timer', function() {
+    var spy = sinon.spy();
+    this.pomodoro.on('tick', spy);
+    this.pomodoro.start();
+    this.clock.tick(pomotime + 1000);
+    sinon.assert.calledWith(spy, '25:01');
+  });
+
+  it('should notify a short break after a pomodoro timer', function() {
+    var spy = sinon.spy(this.pomodoro, 'notify');
+    this.pomodoro.start();
+    this.clock.tick(pomotime + 1000);
+    sinon.assert.calledOnce(spy);
+    sinon.assert.calledWithMatch(spy, '5:00');
+    this.pomodoro.notify.restore();
+  });
+
+  it('should notify short break every 3 minutes until break is taken', function() {
+    var spy = sinon.spy(this.pomodoro, 'notify');
+    this.pomodoro.start();
+    this.clock.tick(pomotime + 1000 + 3 * 60 * 1000);
+    sinon.assert.calledTwice(spy);
+    sinon.assert.alwaysCalledWithMatch(spy, '5:00');
+    this.pomodoro.notify.restore();
+  });
+
+  it('should take a short break, emit coutdown tick', function() {
+    var spy = sinon.spy();
+    this.pomodoro.on('tick', spy);
+    this.pomodoro.break();
+    this.clock.tick(2000);
+    sinon.assert.calledTwice(spy);
+    sinon.assert.calledWith(spy, '04:59');
+  });
+
+  it('should take a longer break, emit coutdown tick', function() {
+    var spy = sinon.spy();
+    this.pomodoro.on('tick', spy);
+    this.pomodoro.break('longer');
+    this.clock.tick(2000);
+    sinon.assert.calledTwice(spy);
+    sinon.assert.calledWith(spy, '14:59');
+  });
+
+  it('should notify after a break', function() {
+    var spy = sinon.spy(this.pomodoro, 'notify');
+    this.pomodoro.break();
+    this.clock.tick(shortbreak + 5000);
+    sinon.assert.calledOnce(spy);
+    sinon.assert.calledWithMatch(spy, 'Complete')
+  });
+});

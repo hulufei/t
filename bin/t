@@ -5,12 +5,14 @@ var path = require('path');
 var os = require('os');
 var fs = require('fs');
 
+var charm = require('charm')(process);
 var program = require('commander');
 var moment = require('moment');
 var colors = require('colors');
 var mkdirp = require('mkdirp');
 
 var T = require('../t');
+var pomodoro = require('../lib/pomodoro')();
 
 // Track tasks daily, saved as a plain text file named by today's date
 // eg. 2013-10-10.t
@@ -32,18 +34,65 @@ function requireConfig() {
   }
 }
 
-function prompt(t) {
-  console.log('You are working on ' + t.task.text.bold.cyan + ' started at ' + t.task.start.green);
-  console.log('Press s+Enter to stop working on this task');
+function start(t) {
+  var lines = [
+    '\n',
+    'You are working on ' + t.task.text.bold.cyan + '\t',
+    '\n',
+    '\nPress Ctrl+C to stop(break or interrupt) task'
+  ];
+  var timerY = 1;
+  var timerX = lines[timerY].length;
+  var lastY = lines.length - 1;
+  var lastX = lines[lastY].length;
+  // TODO: More smart to determine longer or short break
+  var mode = t.getAllPomodori().length % pomodoro.pomodori === 0 ? 'longer' : 'short';
 
-  process.stdin.resume();
-  process.stdin.on('data', function(action) {
-    if (action == 's' + os.EOL) {
-      // Save time and exit
-      // TODO: save end time every 3 minutes to prevent like Ctrl+C exit
-      t.stop();
-      process.exit(1);
+  charm.cursor(false);
+
+  // Write lines
+  lines.forEach(charm.write, charm);
+
+  // Init timer's output position
+  charm.move(timerX - lastX, timerY - lastY);
+
+  pomodoro.on('tick', function(timer) {
+    charm.left(timer.length);
+    charm.write(timer.green);
+  });
+
+  pomodoro.start(mode);
+
+  charm.removeAllListeners('^C');
+  // Once accept key to break or interrupt
+  charm.once('^C', function() {
+    var start = t.task.start.split(':');
+    var startTime = moment({
+      hours: +start[0],
+      minutes: +start[1]
+    });
+    // Duration is minutes
+    var duration = moment().diff(startTime, 'minutes');
+    charm.cursor(true);
+    if (duration >= pomodoro.pomoTimer) {
+      // Take a break
+      t.task.metas.pomodoro = 1;
+      pomodoro.break(mode);
     }
+    else {
+      t.task.metas.interruption = 1;
+      pomodoro.stopTimer();
+      // Log the interruption
+      charm.move(-timerX, lastY - timerY + 1);
+      console.log('\n');
+      console.log('Interruption +1, press Ctrl+C one more time to exit'.red);
+    }
+    t.stop();
+
+    // Exit on next Ctrl+C
+    charm.once('^C', function() {
+      process.exit();
+    });
   });
 }
 
@@ -95,9 +144,9 @@ program
         var id = parseInt(arg, 10);
           try {
             t.start(id);
-            prompt(t);
+            start(t);
           }
-          catch(e) {
+          catch(err) {
             console.log('Task id ' + arg.red + ' does not exist!');
             process.exit(1);
           }
@@ -105,7 +154,7 @@ program
       else {
         // Add new task then start
         t.start(arg);
-        prompt(t);
+        start(t);
       }
     });
   });
