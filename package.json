@@ -1,6 +1,6 @@
 {
   "name": "t-cli",
-  "version": "0.0.5",
+  "version": "0.0.6",
   "description": "A daily time tracker",
   "keywords": [
     "time tracker",
@@ -36,7 +36,6 @@
     "colors": "~0.6.2",
     "mkdirp": "~0.3.5",
     "growl": "~1.7.0",
-    "charm": "~0.2.0",
-    "promptly": "~0.2.0"
+    "charm": "~0.2.0"
   }
 }
