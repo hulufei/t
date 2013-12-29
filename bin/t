@@ -50,7 +50,8 @@ function start(t) {
   var lastY = lines.length - 1;
   var lastX = lines[lastY].length;
   // TODO: More smart to determine longer or short break
-  var mode = t.getAllPomodori().length % pomodoro.pomodori === 0 ? 'longer' : 'short';
+  var pomos = t.getAllPomodori().length;
+  var mode = (pomos && pomos % pomodoro.pomodori === 0) ? 'longer' : 'short';
   var charm = require('charm')(process);
 
   charm.cursor(false);
