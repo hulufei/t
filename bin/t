@@ -33,6 +33,11 @@ function requireConfig() {
   }
 }
 
+function writeConfig() {
+  try { mkdirp.sync(path.dirname(configFile)); } catch(e) {}
+  fs.writeFileSync(configFile, JSON.stringify(config, null, 4));
+}
+
 function start(t) {
   var lines = [
     '\n',
@@ -86,12 +91,13 @@ function start(t) {
       charm.move(-timerX, lastY - timerY + 1);
       console.log('\nChoose a interruption reason or enter others(Press Ctrl+C one more time to exit):');
       var inputs = [];
-      var interruptions = [
-        'Colleague Interrupted',
-        'Boss Interrupted',
-        'Phone Call'
-      ];
-      interruptions.forEach(function(value, i) {
+      config.interruptions = config.interruptions ||
+          [
+            'Colleague Interrupted',
+            'Boss Interrupted',
+            'Phone Call'
+          ];
+      config.interruptions.forEach(function(value, i) {
         console.log((i + '. ' + value).red);
       });
       process.stdin.on('data', function(chunk) {
@@ -109,8 +115,18 @@ function start(t) {
           inputs.shift();
           // console.log(inputs);
           var line = inputs.join('').trim();
-          t.task.metas.interruption = line.match(/^\d+$/) ?
-            (interruptions[+line] || 1) : line;
+          if (line.match(/^\d+$/)) {
+            t.task.metas.interruption = config.interruptions[+line] || 1;
+          }
+          else {
+            t.task.metas.interruption = line;
+            if (config.interruptions.indexOf(line) === -1) {
+              config.interruptions.push(line);
+              writeConfig();
+            }
+          }
+          console.log('\n');
+          console.log('Interrupted +1'.red);
           charm.emit('^C');
         }
         else {
@@ -146,8 +162,7 @@ program
     try { config = require(configFile); } catch(e) {}
     if (d) {
       config.dir = path.resolve(d);
-      try { mkdirp.sync(path.dirname(configFile)); } catch(e) {}
-      fs.writeFileSync(configFile, JSON.stringify(config, null, 4));
+      writeConfig();
       console.log('Set the saved directory to ' + config.dir + ' success!');
     }
     else {
