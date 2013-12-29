@@ -7,7 +7,6 @@ var split = require('split');
 var _ = require('lodash');
 
 var parser = require('./lib/parser');
-var pomodoro = require('./lib/pomodoro')();
 
 
 // T is a instance of task file, every line in task file is a task, all the tasks
