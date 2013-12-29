@@ -26,10 +26,13 @@ describe('Pomodoro', function() {
 
   it('should emit incremental time after a pomodoro timer', function() {
     var spy = sinon.spy();
+    var notifySpy = sinon.spy(this.pomodoro, 'notify');
     this.pomodoro.on('tick', spy);
     this.pomodoro.start();
-    this.clock.tick(pomotime + 1000);
-    sinon.assert.calledWith(spy, '25:01');
+    this.clock.tick(pomotime + 2000);
+    sinon.assert.calledOnce(notifySpy);
+    sinon.assert.calledWith(spy, '25:02');
+    this.pomodoro.notify.restore();
   });
 
   it('should notify a short break after a pomodoro timer', function() {
