@@ -90,15 +90,17 @@ function start(t) {
       pomodoro.stopTimer();
       // Log the interruption
       charm.move(-timerX, lastY - timerY + 1);
-      console.log('\nChoose a interruption reason or enter others(Press Ctrl+C one more time to exit):');
-      var inputs = [];
+      console.log('\nChoose a interruption reason or enter others:');
+      console.log('\n(Press Ctrl+C one more time to exit)');
       config.interruptions = config.interruptions ||
           [
             'Colleague Interrupted',
             'Boss Interrupted',
             'Phone Call'
           ];
-      config.interruptions.forEach(function(value, i) {
+      var inputs = [];
+      var interruptions = config.interruptions;
+      interruptions.forEach(function(value, i) {
         console.log((i + '. ' + value).red);
       });
       process.stdin.on('data', function(chunk) {
@@ -117,12 +119,12 @@ function start(t) {
           // console.log(inputs);
           var line = inputs.join('').trim();
           if (line.match(/^\d+$/)) {
-            t.task.metas.interruption = config.interruptions[+line] || 1;
+            t.task.metas.interruption = interruptions[+line] || 1;
           }
           else {
             t.task.metas.interruption = line;
-            if (config.interruptions.indexOf(line) === -1) {
-              config.interruptions.push(line);
+            if (interruptions.indexOf(line) === -1) {
+              interruptions.push(line);
               writeConfig();
             }
           }
