@@ -82,10 +82,22 @@ describe('Pomodoro', function() {
 
   it('should notify after a break', function() {
     var spy = sinon.spy(this.pomodoro, 'notify');
+    var tickSpy = sinon.spy();
+    this.pomodoro.on('tick', tickSpy);
     this.pomodoro.break();
-    this.clock.tick(shortbreak + 5000);
+    this.clock.tick(shortbreak + 2000);
     // Start + End notify
     sinon.assert.calledTwice(spy);
+    sinon.assert.calledWithMatch(spy, 'Complete');
+    sinon.assert.calledWithMatch(tickSpy, '00:00');
+    this.pomodoro.notify.restore();
+  });
+
+  it('should notify every 3 minutes after a break', function() {
+    var spy = sinon.spy(this.pomodoro, 'notify');
+    this.pomodoro.break();
+    this.clock.tick(shortbreak + 3 * 60 * 1000 + 2000);
+    sinon.assert.calledThrice(spy);
     sinon.assert.calledWithMatch(spy, 'Complete')
     this.pomodoro.notify.restore();
   });
