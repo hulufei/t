@@ -54,8 +54,6 @@ function start(t) {
   var mode = (pomos && pomos % pomodoro.pomodori === 0) ? 'longer' : 'short';
   var charm = require('charm')(process);
 
-  charm.cursor(false);
-
   // Write lines
   lines.forEach(charm.write, charm);
 
@@ -79,7 +77,6 @@ function start(t) {
     });
     // Duration is minutes
     var duration = moment().diff(startTime, 'minutes');
-    charm.cursor(true);
     if (duration >= pomodoro.pomoTimer) {
       // Take a break
       t.task.metas.pomodoro = 1;
