@@ -19,9 +19,9 @@ describe('Pomodoro', function() {
     var spy = sinon.spy();
     this.pomodoro.on('tick', spy);
     this.pomodoro.start();
-    this.clock.tick(2000);
+    this.clock.tick(1000);
     sinon.assert.calledTwice(spy);
-    sinon.assert.calledWith(spy, '24:58');
+    sinon.assert.calledWith(spy, '24:59');
   });
 
   it('should emit incremental time after a pomodoro timer', function() {
