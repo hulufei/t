@@ -6,10 +6,13 @@ A daily time tracker
 
 `npm install -g t-cli`
 
+Install terminal notify, see this
+[introduction](https://github.com/visionmedia/node-growl).
+
 ## Pomodoro
 
 - A pomodoro set to 25 mins
-- A short break set to 5 mins after a pomodoro
+- After a pomodoro, take a short break(5 mins)
 - Every 4 "pomodori" take a longer break(15 mins)
 
 Every task started, followed by a pomodoro.
