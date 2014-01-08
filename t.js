@@ -11,9 +11,18 @@ var parser = require('./lib/parser');
 
 // T is a instance of task file, every line in task file is a task, all the tasks
 // construct a collection
-function T(filepath) {
-  this.file = filepath || '';
-  this.stream = fs.createReadStream(this.file, { encoding: 'utf8' });
+function T(s) {
+  if (typeof s === 'string') {
+    this.file = s;
+    this.stream = fs.createReadStream(this.file, { encoding: 'utf8' });
+  }
+  else if (typeof s === 'object' && s.readable) {
+    this.stream = s;
+  }
+  else {
+    throw new Error('Invalid arguments for T');
+  }
+
   this.parser = parser();
   this.task = null;
   this.collections = [];

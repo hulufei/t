@@ -3,6 +3,24 @@ var sinon = require('sinon');
 var T = require('../t');
 
 describe('T', function() {
+  describe('Init', function() {
+    it('should init with string(filepath)', function() {
+      var t = new T('test.t');
+      t.should.be.ok;
+    });
+
+    it('should init with readable stream', function() {
+      var stream = fs.createReadStream('');
+      var t = new T(stream);
+      t.should.be.ok;
+      t.stream.should.equal(stream);
+    });
+
+    it('should throw an error init by others', function() {
+      T.should.throw();
+    });
+  });
+
   describe('Create New Task File', function() {
     var tempDir = 'tmp/';
     var tempFile = tempDir + 'test.t';
