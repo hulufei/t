@@ -1,18 +1,19 @@
 var fs = require('fs');
 var sinon = require('sinon');
+var should = require('should');
 var T = require('../t');
 
 describe('T', function() {
   describe('Init', function() {
     it('should init with string(filepath)', function() {
       var t = new T('test.t');
-      t.should.be.ok;
+      should.exist(t);
     });
 
     it('should init with readable stream', function() {
       var stream = fs.createReadStream('');
       var t = new T(stream);
-      t.should.be.ok;
+      should.exist(t);
       t.stream.should.equal(stream);
     });
 
