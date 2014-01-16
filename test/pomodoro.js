@@ -98,7 +98,7 @@ describe('Pomodoro', function() {
     this.pomodoro.break();
     this.clock.tick(shortbreak + 3 * 60 * 1000 + 2000);
     sinon.assert.calledThrice(spy);
-    sinon.assert.calledWithMatch(spy, 'Complete')
+    sinon.assert.calledWithMatch(spy, 'Complete');
     this.pomodoro.notify.restore();
   });
 });
