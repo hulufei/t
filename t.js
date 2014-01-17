@@ -57,11 +57,22 @@ T.prototype.push = function(text) {
 
 // Set a exist todo item or add a new task
 T.prototype.setTaskByName = function(text) {
-  this.task = _.find(this.collections, function(task) {
-    return !task.start && !task.end && task.text == text;
+  // Find matched item
+  var task = _.find(this.collections, function(task) {
+    return task.text == text;
   });
-  if (!this.task) {
+  if (!task) {
+    // Add a new task
     this.push(text);
+  }
+  else if (task.start && task.end) {
+    // New a matched item
+    this.task = _.clone(task);
+    this.collections.push(this.task);
+  }
+  else {
+    // Matched todo task, modify itself
+    this.task = task;
   }
 };
 

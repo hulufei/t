@@ -114,6 +114,16 @@ describe('T', function() {
       tasks.should.match(/tag: text/);
     });
 
+    it('should start task by id with metas reserved', function() {
+      this.t.push('hello world | p:1, tag: text').start();
+      this.t.stop();
+      this.t.start(0);
+      this.t.stop();
+      var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).trim().split('\n');
+      tasks.should.have.length(2);
+      tasks[1].split(/\s+/).join('').should.match(/p:1,tag:text/);
+    });
+
     it.skip('should sort a started todo item to the end', function() {
       // Currently prefer to keep id orders
       // To implement this, just change find to filter
