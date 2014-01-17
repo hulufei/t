@@ -115,13 +115,17 @@ describe('T', function() {
     });
 
     it('should start task by id with metas reserved', function() {
+      var clock = sinon.useFakeTimers();
       this.t.push('hello world | p:1, tag: text').start();
       this.t.stop();
       this.t.start(0);
+      clock.tick(60 * 1000);
       this.t.stop();
       var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).trim().split('\n');
       tasks.should.have.length(2);
+      tasks[0].should.not.equal(tasks[1]);
       tasks[1].split(/\s+/).join('').should.match(/p:1,tag:text/);
+      clock.restore();
     });
 
     it.skip('should sort a started todo item to the end', function() {
