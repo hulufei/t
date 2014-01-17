@@ -158,7 +158,7 @@ program
   .command('set [dir]')
   .description('get/set the task saved directory')
   .action(function(d) {
-    var config = {};
+    config = {};
     try { config = require(configFile); } catch(e) {}
     if (d) {
       config.dir = path.resolve(d);
