@@ -10,7 +10,7 @@
   ],
   "main": "t",
   "scripts": {
-    "test": "mocha test"
+    "test": "./node_modules/mocha/bin/mocha test"
   },
   "bin": {
     "t": "./bin/t"
@@ -26,7 +26,8 @@
   "license": "MIT",
   "devDependencies": {
     "should": "~2.1.1",
-    "sinon": "~1.7.3"
+    "sinon": "~1.7.3",
+    "mocha": "~1.17.0"
   },
   "dependencies": {
     "commander": "~2.1.0",

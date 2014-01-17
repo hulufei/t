@@ -67,7 +67,7 @@ T.prototype.setTaskByName = function(text) {
   }
   else if (task.start && task.end) {
     // New a matched item
-    this.task = _.clone(task);
+    this.task = _.clone(task, true);
     this.collections.push(this.task);
   }
   else {

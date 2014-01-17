@@ -1,4 +1,4 @@
-# t
+# t [![Build Status](https://travis-ci.org/hulufei/t.png?branch=master)](https://travis-ci.org/hulufei/t)
 
 A daily time tracker
 
