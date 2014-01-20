@@ -25,6 +25,7 @@ function T(s) {
 
   this.parser = parser();
   this.task = null;
+  this.date = moment().format('YYYY-M-D');
   this.collections = [];
 
   var self = this;
@@ -37,22 +38,22 @@ function T(s) {
 
   // Can't read task file? noop
   // Just create one in the end
-  this.stream.on('error', function(e) {});
+  this.stream.on('error', function() {});
 }
 
 // Add a todo task, with no start and end time
 T.prototype.todo = function(text) {
   // Added when the todo item doesn't exist
-  if (_.findIndex(this.collections, { text: text }) == -1) {
+  if (_.findIndex(this.collections, { text: text }) === -1) {
     this.push(text).save();
   }
 };
 
 // Push a new task to collections
 T.prototype.push = function(text) {
-    this.task = this.parser.parseBody(text);
-    this.collections.push(this.task);
-    return this;
+  this.task = this.parser.parseBody(text);
+  this.collections.push(this.task);
+  return this;
 };
 
 // Set a exist todo item or add a new task
@@ -78,7 +79,7 @@ T.prototype.setTaskByName = function(text) {
 
 // Start a task by id or add and start a new task
 T.prototype.start = function(target) {
-  if (typeof target == 'number') {
+  if (typeof target === 'number') {
     // Start a task by id
     var item = this.getUniqList()[target];
     if (item) {
@@ -116,11 +117,14 @@ T.prototype.stringify = function(tasks) {
       '<% _.forEach(metas, function(value, key) { %>' +
         '<%= key %>: <%= value %>,' +
       '<% }); %> <%= end %>');
-  return tasks.map(function(task) {
-    task.start = task.start || '';
-    task.end = task.end || '';
-    return template(task);
-  });
+  // Push date to first line
+  return ['#' + this.date].concat(
+    tasks.map(function(task) {
+      task.start = task.start || '';
+      task.end = task.end || '';
+      return template(task);
+    })
+  );
 };
 
 // Unique tasks

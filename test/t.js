@@ -4,6 +4,8 @@ var should = require('should');
 var T = require('../t');
 
 describe('T', function() {
+  var datePattern = /^#+\s*\d{4}-\d{1,2}-\d{1,2}/;
+
   describe('Init', function() {
     it('should init with string(filepath)', function() {
       var t = new T('test.t');
@@ -35,15 +37,16 @@ describe('T', function() {
       fs.rmdirSync(tempDir);
     });
 
-    it('should insert and save a task', function() {
+    it('should insert and save a task with date line', function() {
       this.t.push('hello world').start();
       fs.existsSync(tempFile).should.be.false;
       this.t.stop();
       fs.existsSync(tempFile).should.be.true;
-      var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' });
-      tasks.should.match(/hello world/);
-      tasks.should.startWith(this.t.task.start);
-      tasks.should.endWith(this.t.task.end);
+      var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).split('\n');
+      tasks[0].should.match(datePattern);
+      tasks[1].should.match(/hello world/);
+      tasks[1].should.startWith(this.t.task.start);
+      tasks[1].should.endWith(this.t.task.end);
     });
 
     it('should start and track a task', function() {
@@ -57,8 +60,9 @@ describe('T', function() {
 
     it('should add a todo task', function() {
       this.t.todo('todo item');
-      var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).trim();
-      tasks.should.be.equal('todo item |');
+      var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).split('\n');
+      tasks[0].should.match(datePattern);
+      tasks[1].trim().should.be.equal('todo item |');
     });
 
     it('should start a todo task by name', function() {
@@ -69,10 +73,11 @@ describe('T', function() {
       this.t.start('todo item');
       this.t.stop();
       var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).trim().split('\n');
-      tasks.should.have.length(2);
-      tasks[0].should.match(/hello world/);
-      tasks[1].should.match(/todo item/);
-      tasks[1].should.match(/\d{1,2}:\d{2}/);
+      tasks.should.have.length(3);
+      tasks[0].should.match(datePattern);
+      tasks[1].should.match(/hello world/);
+      tasks[2].should.match(/todo item/);
+      tasks[2].should.match(/\d{1,2}:\d{2}/);
     });
 
     it('should start task by id', function() {
@@ -85,10 +90,11 @@ describe('T', function() {
       this.t.start(0);
       this.t.stop();
       var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).trim().split('\n');
-      tasks.should.have.length(3);
-      tasks[0].should.match(/task 1/);
-      tasks[2].should.match(/task 1/);
-      tasks[2].should.match(/\d{1,2}:\d{2}/);
+      tasks.should.have.length(4);
+      tasks[0].should.match(datePattern);
+      tasks[1].should.match(/task 1/);
+      tasks[3].should.match(/task 1/);
+      tasks[3].should.match(/\d{1,2}:\d{2}/);
     });
 
     it('should start a todo task by id', function() {
@@ -100,10 +106,11 @@ describe('T', function() {
       this.t.start(1);
       this.t.stop();
       var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).trim().split('\n');
-      tasks.should.have.length(2);
-      tasks[0].should.match(/task 1/);
-      tasks[1].should.match(/todo item/);
-      tasks[1].should.match(/\d{1,2}:\d{2}/);
+      tasks.should.have.length(3);
+      tasks[0].should.match(datePattern);
+      tasks[1].should.match(/task 1/);
+      tasks[2].should.match(/todo item/);
+      tasks[2].should.match(/\d{1,2}:\d{2}/);
     });
 
     it('should save the metas', function() {
@@ -121,10 +128,11 @@ describe('T', function() {
       this.t.start(0);
       clock.tick(60 * 1000);
       this.t.stop();
-      var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).trim().split('\n');
-      tasks.should.have.length(2);
-      tasks[0].should.not.equal(tasks[1]);
-      tasks[1].split(/\s+/).join('').should.match(/p:1,tag:text/);
+      var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).split('\n');
+      tasks.should.have.length(3);
+      tasks[0].should.match(datePattern);
+      tasks[1].should.not.equal(tasks[2]);
+      tasks[2].split(/\s+/).join('').should.match(/p:1,tag:text/);
       clock.restore();
     });
 
@@ -140,8 +148,8 @@ describe('T', function() {
       this.t.start('todo');
       this.t.stop();
       var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).split('\n');
-      tasks.should.have.length(3);
-      tasks[2].should.match(/todo/);
+      tasks.should.have.length(4);
+      tasks[3].should.match(/todo/);
     });
 
   });
@@ -238,6 +246,69 @@ describe('T', function() {
           t.collections[1].metas.should.include({p: ''});
           t.collections[2].metas.should.include({p: '1'});
           t.collections[3].metas.should.include({p: '1', tag: ''});
+          done();
+        });
+      });
+    });
+
+    describe('Date Line', function() {
+      it('should parse yyyy-m-d', function(done) {
+        var t = new T(__dirname + '/tasks/date/simple.t');
+        t.parser.on('end', function() {
+          t.collections.should.have.length(1);
+          var task = t.collections[0];
+          task.start.should.equal('8:00');
+          task.date.getFullYear().should.equal(2013);
+          // start from 0
+          task.date.getMonth().should.equal(0);
+          task.date.getDate().should.equal(1);
+          done();
+        });
+      });
+
+      it('should parse yyyy-mm-d', function(done) {
+        var t = new T(__dirname + '/tasks/date/simple-mm.t');
+        t.parser.on('end', function() {
+          t.collections.should.have.length(1);
+          var task = t.collections[0];
+          task.end.should.equal('9:00');
+          task.date.getFullYear().should.equal(2013);
+          // start from 0
+          task.date.getMonth().should.equal(1);
+          task.date.getDate().should.equal(3);
+          done();
+        });
+      });
+
+      it('should parse pretty date line', function(done) {
+        var t = new T(__dirname + '/tasks/date/pretty.t');
+        t.parser.on('end', function() {
+          t.collections.should.have.length(1);
+          var task = t.collections[0];
+          task.text.should.equal('test');
+          task.date.getFullYear().should.equal(2013);
+          task.date.getMonth().should.equal(0);
+          task.date.getDate().should.equal(1);
+          done();
+        });
+      });
+
+      it('should ignore invalid date line', function(done) {
+        var t = new T(__dirname + '/tasks/date/invalid.t');
+        t.parser.on('end', function() {
+          t.collections.should.have.length(1);
+          t.collections[0].start.should.equal('8:00');
+          t.collections[0].should.not.have.property('date');
+          done();
+        });
+      });
+
+      it('should ignore invalid date line that match the date pattern', function(done) {
+        var t = new T(__dirname + '/tasks/date/invalid-matched.t');
+        t.parser.on('end', function() {
+          t.collections.should.have.length(1);
+          t.collections[0].start.should.equal('8:00');
+          t.collections[0].should.not.have.property('date');
           done();
         });
       });
