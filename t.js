@@ -28,13 +28,14 @@ function T(s) {
   this.date = moment().format('YYYY-M-D');
   this.collections = [];
 
-  var self = this;
   this.stream
     .pipe(split())
     .pipe(this.parser)
-    .on('data', function(task) {
-      self.collections.push(task);
-    });
+    .on('data',
+      function(task) {
+        this.collections.push(task);
+      }.bind(this)
+    );
 
   // Can't read task file? noop
   // Just create one in the end
