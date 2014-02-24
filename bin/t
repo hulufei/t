@@ -67,7 +67,7 @@ function start(t) {
       console.log('\nChoose a interruption reason or enter others:');
       console.log('\n(Press Ctrl+C one more time to exit)');
 
-      var conf = config.load() || {};
+      var conf = config.load();
       conf.interruptions = conf.interruptions ||
           [
             'Colleague Interrupted',
@@ -142,7 +142,7 @@ program
   .command('set [dir]')
   .description('get/set the task saved directory')
   .action(function(d) {
-    var conf = config.load() || {};
+    var conf = config.load();
     if (d) {
       conf.dir = path.resolve(d);
       config.save(conf);
