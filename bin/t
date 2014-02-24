@@ -2,41 +2,18 @@
 // vim: set filetype=javascript:
 
 var path = require('path');
-var os = require('os');
-var fs = require('fs');
 
 var program = require('commander');
 var moment = require('moment');
 var colors = require('colors');
-var mkdirp = require('mkdirp');
 
 var T = require('../t');
+var config = require('../lib/config');
 var pomodoro = require('../lib/pomodoro')();
 
 // Track tasks daily, saved as a plain text file named by today's date
 // eg. 2013-10-10.t
 var today = moment().format('YYYY-MM-DD');
-var HOME = process.env[(process.platform == 'win32') ? 'USERPROFILE' : 'HOME'];
-var configFile = path.join(HOME, '.t/config.json');
-var config;
-
-// A config.json set/get task saved directory
-// `{ dir: 'path' }`
-function requireConfig() {
-  try {
-    return require(configFile);
-  }
-  catch(e) {
-    console.log('\nPlease set task saved directory first.');
-    program.outputHelp();
-    process.exit(1);
-  }
-}
-
-function writeConfig() {
-  try { mkdirp.sync(path.dirname(configFile)); } catch(e) {}
-  fs.writeFileSync(configFile, JSON.stringify(config, null, 4));
-}
 
 function start(t) {
   var lines = [
@@ -89,14 +66,16 @@ function start(t) {
       charm.move(-timerX, lastY - timerY + 1);
       console.log('\nChoose a interruption reason or enter others:');
       console.log('\n(Press Ctrl+C one more time to exit)');
-      config.interruptions = config.interruptions ||
+
+      var conf = config.load() || {};
+      conf.interruptions = conf.interruptions ||
           [
             'Colleague Interrupted',
             'Boss Interrupted',
             'Phone Call'
           ];
       var inputs = [];
-      var interruptions = config.interruptions;
+      var interruptions = conf.interruptions;
       interruptions.forEach(function(value, i) {
         console.log((i + '. ' + value).red);
       });
@@ -122,7 +101,7 @@ function start(t) {
             t.task.metas.interruption = line;
             if (interruptions.indexOf(line) === -1) {
               interruptions.push(line);
-              writeConfig();
+              config.save(conf);
             }
           }
           console.log('\n');
@@ -145,8 +124,13 @@ function start(t) {
 
 // date format: YYYY-MM-DD
 function iniT(date, cb) {
-  config = config || requireConfig();
-  var t = new T(path.join(config.dir, (date || today) + '.t'));
+  var conf = config.load(function(err) {
+    console.log('\nPlease set task saved directory first.');
+    program.outputHelp();
+    process.exit(1);
+  });
+
+  var t = new T(path.join(conf.dir, (date || today) + '.t'));
   if (cb) {
     t.stream.on('error', function(e) { cb(e, t); });
     t.parser.on('end', function(e) { cb(e, t); });
@@ -158,16 +142,15 @@ program
   .command('set [dir]')
   .description('get/set the task saved directory')
   .action(function(d) {
-    config = {};
-    try { config = require(configFile); } catch(e) {}
+    var conf = config.load() || {};
     if (d) {
-      config.dir = path.resolve(d);
-      writeConfig();
-      console.log('Set the saved directory to ' + config.dir + ' success!');
+      conf.dir = path.resolve(d);
+      config.save(conf);
+      console.log('Set the saved directory to ' + conf.dir + ' success!');
     }
     else {
       // Show the saved directory without specified
-      console.log(config.dir || 'You have not set task saved directory yet!');
+      console.log(conf.dir || 'You have not set task saved directory yet!');
     }
   });
 
