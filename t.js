@@ -20,27 +20,32 @@ function T(s) {
     this.stream = s;
   }
   else {
-    throw new Error('Invalid arguments for T');
+    this.stream = null;
   }
 
-  this.parser = parser();
   this.task = null;
   this.date = moment().format('YYYY-M-D');
   this.collections = [];
 
-  this.stream
-    .pipe(split())
-    .pipe(this.parser)
-    .on('data',
-      function(task) {
-        this.collections.push(task);
-      }.bind(this)
-    );
+  if (this.stream) this.parse(this.stream);
+}
+
+// Parse stream, add task to collections
+T.prototype.parse = function(stream) {
+  this.parser =
+    stream
+      .pipe(split())
+      .pipe(parser())
+      .on('data',
+        function(task) {
+          this.collections.push(task);
+        }.bind(this)
+      );
 
   // Can't read task file? noop
   // Just create one in the end
-  this.stream.on('error', function() {});
-}
+  stream.on('error', function() {});
+};
 
 // Add a todo task, with no start and end time
 T.prototype.todo = function(text) {
@@ -61,7 +66,7 @@ T.prototype.push = function(text) {
 T.prototype.setTaskByName = function(text) {
   // Find matched item
   var task = _.find(this.collections, function(task) {
-    return task.text == text;
+    return task.text === text;
   });
   if (!task) {
     // Add a new task
@@ -90,7 +95,7 @@ T.prototype.start = function(target) {
       throw new Error(target + ' does not exist!');
     }
   }
-  else if (typeof target == 'string') {
+  else if (typeof target === 'string') {
     // Add a new task and start
     this.setTaskByName(target);
   }
@@ -105,6 +110,7 @@ T.prototype.stop = function() {
 
 // Save to task file
 T.prototype.save = function() {
+  if (!this.file) throw new Error('Can not save, T initialized with no filename!');
   // Create directory first, in case the filepath's directory doesn't exist
   try { mkdirp.sync(path.dirname(this.file)); } catch(e) {}
   fs.writeFileSync(this.file, this.stringify().join('\n'));
