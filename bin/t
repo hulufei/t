@@ -9,6 +9,8 @@ var colors = require('colors');
 
 var T = require('../t');
 var config = require('../lib/config');
+var addUser = require('../lib/adduser');
+var Client = require('../lib/client');
 var pomodoro = require('../lib/pomodoro')();
 
 // Track tasks daily, saved as a plain text file named by today's date
@@ -155,6 +157,15 @@ program
   });
 
 program
+  .command('adduser')
+  .description('register/auth user')
+  .action(function() {
+    addUser(function(err) {
+      console.log(err ? err : 'Done');
+    });
+  });
+
+program
   .command('add <task>')
   .description('add a new task(todo)')
   .action(function(text) {
@@ -241,6 +252,18 @@ program
         });
       });
     }
+  });
+
+program
+  .command('upload [period]')
+  .description('upload tasks, optional specified by days or week.\n' +
+      '\teg.\n' +
+      '\tupload\tupload today\'s tasks\n' +
+      '\tupload 3\tupload last 3 day\'s tasks'
+    )
+  .action(function(period) {
+    // TODO
+    var client = new Client();
   });
 
 program.parse(process.argv);
