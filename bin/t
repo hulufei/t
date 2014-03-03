@@ -2,6 +2,7 @@
 // vim: set filetype=javascript:
 
 var path = require('path');
+var fs = require('fs');
 
 var program = require('commander');
 var moment = require('moment');
@@ -176,7 +177,7 @@ program
 
 program
   .command('start <id|task>')
-  .description('start a task by id, or add and start a new task')
+  .description('start a task by id, or start a new task')
   .action(function(arg) {
     iniT(today, function(e, t) {
       if (/^\d+$/.test(arg)) {
@@ -256,14 +257,51 @@ program
 
 program
   .command('upload [period]')
-  .description('upload tasks, optional specified by days or week.\n' +
+  .description('upload tasks, optional specified by days or week or filename.\n' +
       '\teg.\n' +
       '\tupload\tupload today\'s tasks\n' +
       '\tupload 3\tupload last 3 day\'s tasks'
     )
   .action(function(period) {
-    // TODO
     var client = new Client();
+    var days, i, filepath, conf;
+
+    function done(err) {
+      if (err) {
+        console.log(err);
+        process.exit();
+      }
+      else {
+        console.log('Upload Done!');
+      }
+    }
+
+    conf = config.load(done);
+
+    if (period) {
+      filepath = path.resolve(period);
+      days = parseInt(period, 10);
+
+      if (fs.existsSync(filepath)) {
+        client.upload([filepath], done);
+      }
+      else if (days) {
+        var files = [], date;
+        for(i = days; i--;) {
+          date = moment().subtract('d', i).format('YYYY-MM-DD');
+          files.push(path.join(conf.dir, date + '.t'));
+        }
+        // TODO: limit files' count
+        client.upload(files, done);
+      }
+      else {
+        program.outputHelp();
+      }
+    }
+    else {
+      // default today's task
+      client.upload([path.join(conf.dir, today + '.t')], done);
+    }
   });
 
 program.parse(process.argv);
