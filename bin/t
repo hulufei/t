@@ -80,6 +80,8 @@ function start(t) {
     if (duration >= pomodoro.pomoTimer) {
       // Take a break
       t.task.metas.pomodoro = 1;
+      // Stop here to record actual end time
+      t.stop();
       pomodoro.break(mode);
     }
     else {
@@ -137,7 +139,11 @@ function start(t) {
 
     // Exit on next Ctrl+C
     charm.once('^C', function() {
-      t.stop();
+      if (t.task.metas.interruption === 1) {
+        // Interrupted task should be saved once exit to record Interrupt
+        // reason.
+        t.stop();
+      }
       process.exit();
     });
   });
