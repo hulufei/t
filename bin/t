@@ -121,8 +121,8 @@ function start(t) {
             t.task.metas.interruption = interruptions[+line] || 1;
           }
           else {
-            t.task.metas.interruption = line;
-            if (interruptions.indexOf(line) === -1) {
+            t.task.metas.interruption = line || 1;
+            if (line && interruptions.indexOf(line) === -1) {
               interruptions.push(line);
               writeConfig();
             }
@@ -139,7 +139,7 @@ function start(t) {
 
     // Exit on next Ctrl+C
     charm.once('^C', function() {
-      if (t.task.metas.interruption === 1) {
+      if (t.task.metas.interruption) {
         // Interrupted task should be saved once exit to record Interrupt
         // reason.
         t.stop();
