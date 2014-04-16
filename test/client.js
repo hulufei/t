@@ -28,7 +28,7 @@ describe('Client', function() {
   it('should upload task file with token', function() {
     var scope =
       nock(server)
-        .post('/tasks')
+        .post('/api/tasks')
         .matchHeader('x-auth-token', TOKEN)
         .reply(200);
 
