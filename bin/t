@@ -295,7 +295,8 @@ program
         client.upload(files, done);
       }
       else {
-        program.outputHelp();
+        console.log('No file to upload');
+        // program.outputHelp();
       }
     }
     else {
