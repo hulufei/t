@@ -11,6 +11,12 @@ var colors = require('colors');
 var mkdirp = require('mkdirp');
 
 var T = require('../t');
+// In case want to debug
+// var options = {
+//     pomoTimer: 1,
+//     shortBreakTimer: 1,
+//     longerBreakTimer: 1.5
+// };
 var pomodoro = require('../lib/pomodoro')();
 
 // Track tasks daily, saved as a plain text file named by today's date
@@ -78,14 +84,20 @@ function start(t) {
     // Duration is minutes
     var duration = moment().diff(startTime, 'minutes');
     if (duration >= pomodoro.pomoTimer) {
+      // console.log('Take a break: ' + mode);
       // Take a break
       t.task.metas.pomodoro = 1;
+      // Remove interruption mark on an existing task
+      delete t.task.metas.interruption;
       // Stop here to record actual end time
       t.stop();
       pomodoro.break(mode);
     }
     else {
+      // console.log('Take an interruption');
       t.task.metas.interruption = 1;
+      // Remove pomodoro mark on an existing task
+      delete t.task.metas.pomodoro;
       pomodoro.stopTimer();
       // Log the interruption
       charm.move(-timerX, lastY - timerY + 1);
