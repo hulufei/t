@@ -20,7 +20,7 @@ describe('T', function() {
     });
 
     it('should throw an error init by others', function() {
-      T.should.throw();
+      T.should.not.throw();
     });
   });
 

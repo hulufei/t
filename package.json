@@ -27,7 +27,8 @@
   "devDependencies": {
     "should": "~2.1.1",
     "sinon": "~1.7.3",
-    "mocha": "~1.17.0"
+    "mocha": "~1.17.0",
+    "nock": "~0.27.2"
   },
   "dependencies": {
     "commander": "~2.1.0",
@@ -37,6 +38,8 @@
     "colors": "~0.6.2",
     "mkdirp": "~0.3.5",
     "growl": "~1.7.0",
-    "charm": "~0.2.0"
+    "charm": "~0.2.0",
+    "read": "~1.0.5",
+    "request": "~2.34.0"
   }
 }
