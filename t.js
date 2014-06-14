@@ -51,7 +51,8 @@ T.prototype.parse = function(stream) {
 T.prototype.todo = function(text) {
   // Added when the todo item doesn't exist
   if (_.findIndex(this.collections, { text: text }) === -1) {
-    this.push(text).save();
+    // Todo items just saved immediately, override is fine.
+    this.push(text).save(true);
   }
 };
 
@@ -109,10 +110,30 @@ T.prototype.stop = function() {
 };
 
 // Save to task file
-T.prototype.save = function() {
+T.prototype.save = function(override) {
   if (!this.file) throw new Error('Can not save, T initialized with no filename!');
   // Create directory first, in case the filepath's directory doesn't exist
-  try { mkdirp.sync(path.dirname(this.file)); } catch(e) {}
+  try {
+    mkdirp.sync(path.dirname(this.file));
+  } catch(e) {}
+
+  // Compare and merge saved tasks
+  if (!override && fs.existsSync(this.file)) {
+    var _parser = parser();
+    var lines = fs.readFileSync(this.file, { encoding: 'utf8' }).split('\n');
+    // Extract first date line
+    if (_parser.matchDate(lines[0])) lines.shift();
+    var collections = lines.map(function(line) {
+      return _parser.parse(line);
+    });
+
+    var oldT = _.groupBy(collections, 'text');
+    var newT = _.groupBy(this.collections, 'text');
+    // Filter new added item before save
+    _.difference(_.keys(oldT), _.keys(newT)).forEach(function(key) {
+      this.collections = this.collections.concat(oldT[key]);
+    }.bind(this));
+  }
   fs.writeFileSync(this.file, this.stringify().join('\n'));
 };
 

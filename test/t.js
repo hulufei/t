@@ -152,6 +152,24 @@ describe('T', function() {
       tasks[3].should.match(/todo/);
     });
 
+    it('should merge changed task file when saving', function() {
+      // Add some tasks first
+      this.t.start('task 1');
+      this.t.stop();
+      // Start a pomodoro
+      this.t.start('task 2');
+      // Mock another process
+      var t = new T(tempFile);
+      t.todo('todo added by another process');
+      // Then stop the pomodoro
+      this.t.stop();
+      var tasks = fs.readFileSync(tempFile, { encoding: 'utf8' }).split('\n');
+      // First line is date line
+      tasks.should.have.length(4);
+      tasks[2].should.match(/task 2/);
+      tasks[3].should.match(/todo/);
+    });
+
   });
 
   describe('Load Exist Task File', function() {
@@ -313,5 +331,6 @@ describe('T', function() {
         });
       });
     });
+
   });
 });
