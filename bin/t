@@ -176,17 +176,8 @@ program
   });
 
 program
-  .command('adduser')
-  .description('register/auth user')
-  .action(function() {
-    addUser(function(err) {
-      console.log(err ? err : 'Done');
-    });
-  });
-
-program
   .command('add <task>')
-  .description('add a new task(todo)')
+  .description('add a new task (todo)')
   .action(function(text) {
     iniT(today, function(e, t) {
       t.todo(text);
@@ -222,7 +213,7 @@ program
   .command('list [period]')
   .description('list tasks, optional specified by days or week.\n' +
       '\teg.\n' +
-      '\tlist\tlist today\'s tasks\n' +
+      '\tlist  \tlist today\'s tasks\n' +
       '\tlist 3\tlist last 3 day\'s tasks'
     )
   .action(function(period) {
@@ -274,10 +265,19 @@ program
   });
 
 program
+  .command('adduser')
+  .description('register/auth user')
+  .action(function() {
+    addUser(function(err) {
+      console.log(err ? err : 'Done');
+    });
+  });
+
+program
   .command('upload [period]')
   .description('upload tasks, optional specified by days or week or filename.\n' +
       '\teg.\n' +
-      '\tupload\tupload today\'s tasks\n' +
+      '\tupload  \tupload today\'s tasks\n' +
       '\tupload 3\tupload last 3 day\'s tasks'
     )
   .action(function(period) {
