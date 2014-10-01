@@ -2,6 +2,8 @@
 
 A daily time tracker
 
+![Pomodori](/../screenshots/sample.png?raw=true)
+
 ## Install
 
 `npm install -g t-cli`
@@ -17,9 +19,9 @@ Next, install terminal notify, see this
 
 Every task started, followed by a pomodoro.
 
-Press `Ctrl+C` during a pomodoro is an interruption, you can choose a interrupted
+Press `Ctrl+C` during a pomodoro is an interruption, you can choose an interrupted
 reason, or input a reason directly, the reason will be loaded next time. Once press
-`Ctrl+C` will save the task, press one more time to exist.
+`Ctrl+C` will save the task, press once more to exist.
 
 ## Usage
 
@@ -40,7 +42,6 @@ List last 3 days' tasks
 `t list 3`
 
 Start working on a task by id:
-
 
 `t start id`
 
